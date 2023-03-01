@@ -12,10 +12,11 @@ namespace SalesApi.Models
         public string? Description { get; set; } = null;
         [Column(TypeName = "decimal(7,2)")]
         public decimal Total { get; set; }
-
         public int? CustomerId { get; set; }
+        [StringLength(20)]
+        public string Status { get; set; } = "NEW";
         public virtual Customer? Customer { get; set; }
-        public virtual ICollection<OrderLine> OrderLines { get; set; }
+        public virtual ICollection<OrderLine>? OrderLines { get; set; }
 
         public order() { }
     }

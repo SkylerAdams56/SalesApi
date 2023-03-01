@@ -40,7 +40,14 @@ namespace SalesApi.Controllers
 
             return order;
         }
-
+        //PUT : api/Orders/complete/5
+        [HttpPut("complete/{id}")]
+        public async Task<IActionResult> CompleteOrder(int id, order order)
+        {
+            order.Status = "COMPLETE";
+            return await Putorder(id, order);
+            
+        }
         // PUT: api/orders/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -103,5 +110,6 @@ namespace SalesApi.Controllers
         {
             return _context.Orders.Any(e => e.Id == id);
         }
+        
     }
 }
