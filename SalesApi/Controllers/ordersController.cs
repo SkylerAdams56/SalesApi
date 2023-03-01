@@ -31,7 +31,10 @@ namespace SalesApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<order>> Getorder(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                                         .Include(x=>x.OrderLines)
+                                            .ThenInclude(x=>x.Item)
+                                         .SingleOrDefaultAsync(x=>x.Id == id);
 
             if (order == null)
             {
@@ -46,7 +49,6 @@ namespace SalesApi.Controllers
         {
             order.Status = "COMPLETE";
             return await Putorder(id, order);
-            
         }
         // PUT: api/orders/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754

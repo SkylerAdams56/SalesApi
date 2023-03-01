@@ -20,6 +20,39 @@ namespace SalesApi.Controllers
             _context = context;
         }
 
+        private async Task<IActionResult> RecalculateOrderTotal(int orderId)
+        {
+            //read the order to be updated
+            var order = await _context.Orders.FindAsync(orderId);
+            //check if the order is found
+            if (order is null)
+            {
+                return NotFound();
+            }
+            //get all the orderlines for the order
+            var orderlines = await _context.OrderLines
+                                                .Include(x=>x.Item)
+                                                .Where(x  => x.OrderId == orderId)
+                                                .ToListAsync();
+            //Create a collection to store the product of quantity times price
+            //and sum the line totals to get the grandTotal
+            var grandTotal = 0m;
+            foreach(var ol in orderlines)
+            {
+                var lineTotal = ol.Quantity * ol.Item.Price;
+                grandTotal += lineTotal;
+            }
+            //update the order.Total with the grandTotal
+            order.Total = grandTotal;
+            var changed = await _context.SaveChangesAsync();
+            //if change failed throw exception
+            if(changed != 1)
+            {
+                throw new Exception("Recalculate failed");
+            }
+            return Ok();
+        }
+
         // GET: api/OrderLines
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderLine>>> GetOrderLines()
@@ -56,6 +89,7 @@ namespace SalesApi.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await RecalculateOrderTotal(orderLine.OrderId);
             }
             catch (DbUpdateConcurrencyException)
             {
